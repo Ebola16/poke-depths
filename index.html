@@ -25,22 +25,20 @@
       overflow: hidden;
       background: #002233;
       transform-origin: top center;
-      /* Add a border to ensure complete coverage */
       box-sizing: border-box;
     }
 
-    /* Force GPU acceleration with will-change and transform3d */
     .layer {
       position: absolute;
       display: flex;
       top: 0;
       left: 0;
       height: 1080px;
-      width: 3840px; /* two images of 1920px */
+      width: 3840px;
       animation-timing-function: linear;
       animation-iteration-count: infinite;
       will-change: transform;
-      transform: translateZ(0); /* Force hardware acceleration */
+      transform: translateZ(0);
     }
 
     .layer img {
@@ -51,11 +49,9 @@
       user-select: none;
       pointer-events: none;
       display: block;
-      /* Eliminate any potential gaps between images */
       margin: 0;
       padding: 0;
       border: none;
-      /* Slightly overlap images to prevent seams */
       margin-right: -1px;
     }
 
@@ -76,15 +72,13 @@
       transform-origin: center center;
       pointer-events: none;
       will-change: transform;
-      transform: translateZ(0); /* Force hardware acceleration */
-      /* Use transform instead of left for better performance */
+      transform: translateZ(0);
       left: 0;
     }
 
-    /* Optimized keyframes using translateX instead of left */
     @keyframes moveLTR {
       from { transform: translateX(-200px); }
-      to { transform: translateX(2120px); } /* 1920px + 200px */
+      to { transform: translateX(2120px); }
     }
 
     @keyframes moveLTRFlipped {
@@ -130,6 +124,42 @@
       font-weight: bold;
       font-style: italic;
     }
+
+    /* Modal styling, added once for memory efficiency */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+    }
+
+    .modal-content {
+      background: rgba(0, 34, 51, 0.95);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 15px;
+      padding: 30px;
+      max-width: 400px;
+      text-align: center;
+      color: white;
+      font-family: Arial, sans-serif;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    @media (max-height: 500px) {
+      .modal-content {
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -167,89 +197,53 @@
       const container = document.querySelector('.parallax-container');
       const scaleX = window.innerWidth / 1920;
       const scaleY = window.innerHeight / 1080;
-      
-      // Use a slightly larger scale to ensure complete coverage and eliminate seams
       const baseScale = Math.max(scaleX, scaleY);
-      const scale = baseScale * 1.05; // 5% larger to eliminate any seams
-      
-      // Calculate positioning to center the oversized container
+      const scale = baseScale * 1.05;
+
       const scaledWidth = 1920 * scale;
       const scaledHeight = 1080 * scale;
-      
+
       const offsetX = (scaledWidth - window.innerWidth) / 2;
       const offsetY = (scaledHeight - window.innerHeight) / 2;
-      
+
       container.style.transform = `translate(-50%, 0) scale(${scale})`;
       container.style.left = '50%';
       container.style.top = `-${offsetY / scale}px`;
     }
 
-    window.addEventListener('resize', scaleForViewport);
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      cancelAnimationFrame(resizeTimeout);
+      resizeTimeout = requestAnimationFrame(scaleForViewport);
+    });
     window.addEventListener('load', scaleForViewport);
 
     function showInfo() {
-      // Create custom modal instead of alert for better styling control
+      if (document.querySelector('.modal')) return; // Only one modal at a time
+
       const modal = document.createElement('div');
-      modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 2000;
-        -webkit-backdrop-filter: blur(10px);
-        backdrop-filter: blur(10px);
-      `;
+      modal.className = 'modal';
       
       const content = document.createElement('div');
-      content.style.cssText = `
-        background: rgba(0, 34, 51, 0.95);
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        border-radius: 15px;
-        padding: 30px;
-        max-width: 400px;
-        text-align: center;
-        color: white;
-        font-family: Arial, sans-serif;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-      `;
-
-      // Add a <style> tag with media query for small viewports
-      const style = document.createElement('style');
-      style.textContent = `
-        @media (max-height: 500px) {
-          .modal-content {
-            max-height: 90vh;
-            overflow-y: auto;
-          }
-        }
-      `;
-      
-      document.head.appendChild(style);
-      content.classList.add('modal-content');
-      
+      content.className = 'modal-content';
       content.innerHTML = `
-        <h2 style="color: white; margin-top: 0; font-size: 24px;">Poké Depths</h2>
-        <div style="margin: 20px 0;">
-          <a href="https://ebola16.github.io/" target="_blank" style="color: #66ccff; text-decoration: none; font-weight: bold; border-bottom: 1px solid #66ccff;">Author: Ebola16</a>
+        <h2 style="margin-top:0; font-size:24px;">Poké Depths</h2>
+        <div style="margin:20px 0;">
+          <a href="https://ebola16.github.io/" target="_blank" style="color:#66ccff; text-decoration:none; font-weight:bold; border-bottom:1px solid #66ccff;">Author: Ebola16</a>
         </div>
-        <p style="color: white; line-height: 1.6; margin: 15px 0;">A parallax underwater scene with traveling Pokémon!</p>
-        <div style="color: white; text-align: left; margin: 20px 0;">
-          <p style="color: white; margin: 8px 0;">• Random Pokémon swimming across the screen</p>
-          <p style="color: white; margin: 8px 0;">• 1/4096 chance for shiny Pokémon</p>
-          <p style="color: white; margin: 8px 0;">• All Luvdisc on Valentine's Day</p>
-          <p style="color: white; margin: 8px 0;">• Responsive design for all devices</p>
+        <p style="line-height:1.6; margin:15px 0;">A parallax underwater scene with traveling Pokémon!</p>
+        <div style="text-align:left; margin:20px 0;">
+          <p style="margin:8px 0;">• Random Pokémon swimming across the screen</p>
+          <p style="margin:8px 0;">• 1/4096 chance for shiny Pokémon</p>
+          <p style="margin:8px 0;">• All Luvdisc on Valentine's Day</p>
+          <p style="margin:8px 0;">• Responsive design for all devices</p>
         </div>
         <div class="disclaimer">
-          <p>Pokémon assets are ©2025 Nintendo, Creatures Inc., and GAME FREAK inc. All trademarks and copyrights are property of their respective owners. These assets are used here under fair use for non-commercial, educational, and fan-based purposes. No affiliation or endorsement by Nintendo, Creatures Inc., GAME FREAK, or The Pokémon Company is implied.</p>
-          <p><a href="https://craftpix.net/freebies/free-underwater-world-parallax-game-backgrounds/" target="_blank" style="color: #66ccff; text-decoration: none; font-weight: bold; border-bottom: 1px solid #66ccff;">Background source</a></p>
-          <p>Pokémon HOME images Gen I - IX provided by <a href="https://x.com/zim_" target="_blank" style="color: #66ccff; text-decoration: none; font-weight: bold; border-bottom: 1px solid #66ccff;">@zim_</a></p>
+          <p>Pokémon assets are ©2025 Nintendo, Creatures Inc., and GAME FREAK inc. Used under fair use.</p>
+          <p><a href="https://craftpix.net/freebies/free-underwater-world-parallax-game-backgrounds/" target="_blank" style="color:#66ccff;">Background source</a></p>
+          <p>Pokémon HOME images Gen I - IX provided by <a href="https://x.com/zim_" target="_blank" style="color:#66ccff;">@zim_</a></p>
         </div>
-        <button onclick="this.parentElement.parentElement.remove()" style="
+        <button onclick="this.closest('.modal').remove()" style="
           background: rgba(255, 255, 255, 0.2);
           border: 1px solid rgba(255, 255, 255, 0.3);
           color: white;
@@ -263,29 +257,43 @@
       
       modal.appendChild(content);
       document.body.appendChild(modal);
-      
-      // Close modal when clicking outside content
+
       modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-          modal.remove();
-        }
+        if (e.target === modal) modal.remove();
       });
     }
 
     async function fetchGifList() {
-      // For demo purposes, using a placeholder array
-      // Replace with your actual fetch logic
-      try {
-        const response = await fetch('data/images.json');
+      const response = await fetch('data/images.json');
         if (!response.ok) throw new Error("Failed to load images.json");
         const list = await response.json();
-        if (!Array.isArray(list) || list.length === 0) throw new Error("images.json is empty or invalid");
+        if (!Array.isArray(list) || list.length === 0) throw new Error("images.json empty");
         return list;
-      } catch (error) {
-        // Fallback for demo
-        console.warn("Using fallback gif list");
-        return ["pokemon1.gif", "pokemon2.gif", "pokemon3.gif"];
+    }
+
+    const gifPool = [];
+
+    function getGif() {
+      let gif;
+      if (gifPool.length > 0) {
+        gif = gifPool.pop();
+      } else {
+        gif = document.createElement('img');
+        gif.className = 'traveling-gif';
+        gif.onerror = () => releaseGif(gif);
       }
+      gif.style.display = 'block';
+      return gif;
+    }
+
+    function releaseGif(gif) {
+      gif.style.animation = '';
+      gif.style.left = '';
+      gif.style.top = '';
+      gif.style.width = '';
+      gif.style.transform = '';
+      gifPool.push(gif);
+      if (gif.parentElement) gif.parentElement.removeChild(gif);
     }
 
     function spawnTravelingGif(gifs, isValentinesDay) {
@@ -294,24 +302,14 @@
         return;
       }
 
-      const gif = document.createElement('img');
-      gif.className = 'traveling-gif';
+      const gif = getGif();
 
       const useShiny = Math.random() < (1 / 4096) ? 'shiny' : 'normal';
-      let randomGif;
-      if (isValentinesDay) {
-        randomGif = "0370 - Luvdisc.gif";
-      } else {
-        randomGif = gifs[Math.floor(Math.random() * gifs.length)];
-      }
+      const randomGif = isValentinesDay ? "0370 - Luvdisc.gif" : gifs[Math.floor(Math.random() * gifs.length)];
       gif.src = `images/home/${useShiny}/${randomGif}`;
-      
-      // Add alt text for accessibility
+
       const pokemonName = randomGif.replace(/^\d+\s*-\s*/, '').replace('.gif', '');
       gif.alt = `${useShiny === 'shiny' ? 'Shiny ' : ''}${pokemonName} swimming`;
-
-      // Add error handling for missing images
-      gif.onerror = () => gif.remove();
 
       const container = document.querySelector('.parallax-container');
       container.appendChild(gif);
@@ -329,18 +327,16 @@
 
       const leftToRight = Math.random() < 0.5;
       if (leftToRight) {
-        // Start at left edge, move right (flipped)
         gif.style.left = '0px';
         gif.style.transform = `scale(${scale})`;
         gif.style.animation = `moveLTRFlipped ${speed}s linear forwards`;
       } else {
-        // Start at right edge, move left (normal)
         gif.style.left = '0px';
         gif.style.transform = `scale(${scale})`;
         gif.style.animation = `moveRTL ${speed}s linear forwards`;
       }
 
-      gif.addEventListener('animationend', () => gif.remove());
+      gif.addEventListener('animationend', () => releaseGif(gif), { once: true });
 
       setTimeout(() => spawnTravelingGif(gifs, isValentinesDay), 2000 + Math.random() * 4000);
     }
