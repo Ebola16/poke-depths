@@ -29,12 +29,12 @@
     .parallax-container {
       position: fixed;
       top: 0;
-      left: 50%;
+      left: 0;
       width: 1920px;
       height: 1080px;
       overflow: hidden;
       background: #002233;
-      transform-origin: top center;
+      transform-origin: top left;
       box-sizing: border-box;
       /* Critical for preventing flickering */
       -webkit-backface-visibility: hidden;
@@ -390,27 +390,23 @@
     }
 
     function getActualViewportSize() {
-      let width, height;
+      // Use the most reliable viewport dimensions available
+      let width = window.innerWidth;
+      let height = window.innerHeight;
       
+      // Try visualViewport first (most accurate on modern mobile browsers)
       if (window.visualViewport) {
         width = window.visualViewport.width;
         height = window.visualViewport.height;
-      } else {
-        width = window.innerWidth;
-        height = window.innerHeight;
       }
       
-      if (screen.orientation && Math.abs(screen.orientation.angle) === 90) {
-        const screenWidth = screen.width;
-        const screenHeight = screen.height;
-        
-        if (screenWidth > width || screenHeight > height) {
-          width = Math.max(screenWidth, screenHeight);
-          height = Math.min(screenWidth, screenHeight);
-        }
+      // Fallback for older browsers or when visualViewport isn't reliable
+      if (width <= 0 || height <= 0) {
+        width = document.documentElement.clientWidth || window.innerWidth;
+        height = document.documentElement.clientHeight || window.innerHeight;
       }
       
-      return { width, height };
+      return { width: Math.round(width), height: Math.round(height) };
     }
 
     function scaleForViewport() {
@@ -421,31 +417,40 @@
       const container = document.getElementById('parallaxContainer');
       const viewport = getActualViewportSize();
       
+      // Calculate scale to fill viewport completely
       const scaleX = viewport.width / 1920;
       const scaleY = viewport.height / 1080;
-      const baseScale = Math.max(scaleX, scaleY);
-      const scale = baseScale * 1.05;
+      const scale = Math.max(scaleX, scaleY) * 1.05; // Small buffer to ensure full coverage
       
       // Only update if scale changed significantly
-      if (Math.abs(scale - currentScale) > 0.001) {
+      if (Math.abs(scale - currentScale) > 0.01) {
         currentScale = scale;
         
+        // Calculate positioning to center the scaled content
+        const scaledWidth = 1920 * scale;
         const scaledHeight = 1080 * scale;
-        const offsetY = (scaledHeight - viewport.height) / 2;
+        
+        // Center the container
+        const offsetX = (viewport.width - scaledWidth) / 2;
+        const offsetY = (viewport.height - scaledHeight) / 2;
         
         // Apply transform in single operation
         requestAnimationFrame(() => {
-          container.style.transform = `translate(-50%, -${offsetY / scale}px) scale(${scale})`;
+          // Reset transform origin and positioning
+          container.style.transformOrigin = 'top left';
+          container.style.left = '0px';
+          container.style.top = '0px';
+          container.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
           
           setTimeout(() => {
             isScaling = false;
           }, 100);
         });
+        
+        console.log(`Viewport: ${viewport.width}x${viewport.height}, Scale: ${scale.toFixed(3)}, Offset: ${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}`);
       } else {
         isScaling = false;
       }
-      
-      console.log(`Viewport: ${viewport.width}x${viewport.height}, Scale: ${scale.toFixed(3)}`);
     }
 
     // Debounced event handlers
