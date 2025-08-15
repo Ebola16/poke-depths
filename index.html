@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Poké Depths</title>
   <style>
     body {
@@ -193,29 +193,84 @@
   <div class="info-button" onclick="showInfo()"></div>
 
   <script>
+    function getActualViewportSize() {
+      // Try to get the most accurate viewport dimensions on mobile
+      let width, height;
+      
+      if (window.visualViewport) {
+        width = window.visualViewport.width;
+        height = window.visualViewport.height;
+      } else {
+        width = window.innerWidth;
+        height = window.innerHeight;
+      }
+      
+      // Additional check for mobile landscape viewport issues
+      if (screen.orientation && Math.abs(screen.orientation.angle) === 90) {
+        // In landscape mode, use screen dimensions if they seem more reliable
+        const screenWidth = screen.width;
+        const screenHeight = screen.height;
+        
+        // Use screen dimensions if they're larger (which they should be in landscape)
+        if (screenWidth > width || screenHeight > height) {
+          width = Math.max(screenWidth, screenHeight);
+          height = Math.min(screenWidth, screenHeight);
+        }
+      }
+      
+      return { width, height };
+    }
+
     function scaleForViewport() {
       const container = document.querySelector('.parallax-container');
-      const scaleX = window.innerWidth / 1920;
-      const scaleY = window.innerHeight / 1080;
+      const viewport = getActualViewportSize();
+      
+      const scaleX = viewport.width / 1920;
+      const scaleY = viewport.height / 1080;
       const baseScale = Math.max(scaleX, scaleY);
       const scale = baseScale * 1.05;
 
       const scaledWidth = 1920 * scale;
       const scaledHeight = 1080 * scale;
 
-      const offsetX = (scaledWidth - window.innerWidth) / 2;
-      const offsetY = (scaledHeight - window.innerHeight) / 2;
+      const offsetX = (scaledWidth - viewport.width) / 2;
+      const offsetY = (scaledHeight - viewport.height) / 2;
 
       container.style.transform = `translate(-50%, 0) scale(${scale})`;
       container.style.left = '50%';
       container.style.top = `-${offsetY / scale}px`;
+      
+      // Debug info for mobile testing
+      console.log(`Viewport: ${viewport.width}x${viewport.height}, Scale: ${scale.toFixed(3)}`);
     }
 
     let resizeTimeout;
-    window.addEventListener('resize', () => {
-      cancelAnimationFrame(resizeTimeout);
-      resizeTimeout = requestAnimationFrame(scaleForViewport);
-    });
+    function handleResize() {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(scaleForViewport, 100);
+    }
+
+    // Standard resize handler
+    window.addEventListener('resize', handleResize);
+    
+    // Mobile-specific orientation change handler
+    if (screen.orientation) {
+      screen.orientation.addEventListener('change', () => {
+        // Wait longer for mobile orientation changes to complete
+        setTimeout(scaleForViewport, 600);
+      });
+    } else {
+      // Fallback for older mobile browsers
+      window.addEventListener('orientationchange', () => {
+        setTimeout(scaleForViewport, 600);
+      });
+    }
+    
+    // Visual viewport handler for mobile browsers that support it
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleResize);
+    }
+    
     window.addEventListener('load', scaleForViewport);
 
     function showInfo() {
@@ -264,11 +319,16 @@
     }
 
     async function fetchGifList() {
-      const response = await fetch('data/images.json');
+      try {
+        const response = await fetch('data/images.json');
         if (!response.ok) throw new Error("Failed to load images.json");
         const list = await response.json();
         if (!Array.isArray(list) || list.length === 0) throw new Error("images.json empty");
         return list;
+      } catch (error) {
+        console.warn("Using fallback gif list:", error);
+        return ["pokemon1.gif", "pokemon2.gif", "pokemon3.gif"];
+      }
     }
 
     const gifPool = [];
@@ -292,6 +352,7 @@
       gif.style.top = '';
       gif.style.width = '';
       gif.style.transform = '';
+      gif.style.display = 'none';
       gifPool.push(gif);
       if (gif.parentElement) gif.parentElement.removeChild(gif);
     }
@@ -342,10 +403,14 @@
     }
 
     window.onload = async () => {
-      const gifs = await fetchGifList();
-      const today = new Date();
-      const isValentinesDay = today.getMonth() === 1 && today.getDate() === 14;
-      spawnTravelingGif(gifs, isValentinesDay);
+      try {
+        const gifs = await fetchGifList();
+        const today = new Date();
+        const isValentinesDay = today.getMonth() === 1 && today.getDate() === 14;
+        spawnTravelingGif(gifs, isValentinesDay);
+      } catch (error) {
+        console.error("Failed to initialize:", error);
+      }
     };
   </script>
 </body>
