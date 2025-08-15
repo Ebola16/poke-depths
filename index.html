@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Poké Depths</title>
   <style>
+    * {
+      -webkit-transform: translateZ(0);
+      -moz-transform: translateZ(0);
+      -ms-transform: translateZ(0);
+      -o-transform: translateZ(0);
+      transform: translateZ(0);
+    }
+
     body {
       margin: 0;
       overflow: hidden;
@@ -14,6 +22,8 @@
       position: fixed;
       top: 0;
       left: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     .parallax-container {
@@ -26,9 +36,19 @@
       background: #002233;
       transform-origin: top center;
       box-sizing: border-box;
-      /* Prevent flickering during transforms */
+      /* Critical for preventing flickering */
       -webkit-backface-visibility: hidden;
       backface-visibility: hidden;
+      -webkit-perspective: 1000px;
+      perspective: 1000px;
+      -webkit-transform-style: preserve-3d;
+      transform-style: preserve-3d;
+      /* Hide entire container until ready */
+      visibility: hidden;
+    }
+
+    .parallax-container.ready {
+      visibility: visible;
     }
 
     .layer {
@@ -40,18 +60,22 @@
       width: 3840px;
       animation-timing-function: linear;
       animation-iteration-count: infinite;
-      will-change: transform;
-      transform: translateZ(0);
-      /* Prevent flickering */
+      /* Force hardware acceleration */
+      -webkit-transform: translate3d(0, 0, 0);
+      transform: translate3d(0, 0, 0);
       -webkit-backface-visibility: hidden;
       backface-visibility: hidden;
-      /* Hide layers until images load */
+      /* Prevent sub-pixel rendering issues */
+      -webkit-transform-style: preserve-3d;
+      transform-style: preserve-3d;
+      /* Hide layer until both images are loaded */
       opacity: 0;
-      transition: opacity 0.5s ease-in-out;
+      transition: none;
     }
 
     .layer.loaded {
       opacity: 1;
+      transition: opacity 0.3s ease-in-out;
     }
 
     .layer img {
@@ -65,13 +89,27 @@
       margin: 0;
       padding: 0;
       border: none;
-      margin-right: -1px;
-      /* Improve image rendering */
-      image-rendering: -webkit-optimize-contrast;
-      image-rendering: optimize-contrast;
-      /* Prevent flickering */
+      /* Critical: Remove the margin that causes seams */
+      margin-right: 0;
+      /* Prevent image flickering */
       -webkit-backface-visibility: hidden;
       backface-visibility: hidden;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: optimize-contrast;
+      /* Ensure crisp edges */
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
+      /* Force block layout */
+      vertical-align: top;
+    }
+
+    /* Ensure seamless tiling */
+    .layer img:first-child {
+      margin-right: 0;
+    }
+
+    .layer img:last-child {
+      margin-left: -1px;
     }
 
     .layer1 { z-index: 1; animation-name: scroll; animation-duration: 120s; }
@@ -82,35 +120,58 @@
     .layer6 { z-index: 6; animation-name: scroll; animation-duration: 20s; }
 
     @keyframes scroll {
-      from { transform: translate3d(0, 0, 0); }
-      to { transform: translate3d(-1920px, 0, 0); }
+      from { 
+        -webkit-transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0); 
+      }
+      to { 
+        -webkit-transform: translate3d(-1920px, 0, 0);
+        transform: translate3d(-1920px, 0, 0); 
+      }
     }
 
     .traveling-gif {
       position: absolute;
       transform-origin: center center;
       pointer-events: none;
-      will-change: transform;
-      transform: translateZ(0);
-      left: 0;
-      /* Prevent flickering */
       -webkit-backface-visibility: hidden;
       backface-visibility: hidden;
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
+      left: 0;
     }
 
     @keyframes moveLTR {
-      from { transform: translateX(-200px); }
-      to { transform: translateX(2120px); }
+      from { 
+        -webkit-transform: translateX(-200px);
+        transform: translateX(-200px); 
+      }
+      to { 
+        -webkit-transform: translateX(2120px);
+        transform: translateX(2120px); 
+      }
     }
 
     @keyframes moveLTRFlipped {
-      from { transform: translateX(-200px) scaleX(-1); }
-      to { transform: translateX(2120px) scaleX(-1); }
+      from { 
+        -webkit-transform: translateX(-200px) scaleX(-1);
+        transform: translateX(-200px) scaleX(-1); 
+      }
+      to { 
+        -webkit-transform: translateX(2120px) scaleX(-1);
+        transform: translateX(2120px) scaleX(-1); 
+      }
     }
 
     @keyframes moveRTL {
-      from { transform: translateX(1920px); }
-      to { transform: translateX(-200px); }
+      from { 
+        -webkit-transform: translateX(1920px);
+        transform: translateX(1920px); 
+      }
+      to { 
+        -webkit-transform: translateX(-200px);
+        transform: translateX(-200px); 
+      }
     }
 
     .info-button {
@@ -147,7 +208,6 @@
       font-style: italic;
     }
 
-    /* Modal styling, added once for memory efficiency */
     .modal {
       position: fixed;
       top: 0;
@@ -182,116 +242,154 @@
       }
     }
 
-    /* Loading indicator */
     .loading-indicator {
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      color: rgba(255, 255, 255, 0.7);
+      color: rgba(255, 255, 255, 0.8);
       font-family: Arial, sans-serif;
       z-index: 100;
-      opacity: 1;
-      transition: opacity 0.5s ease-out;
+      font-size: 18px;
+      text-align: center;
     }
 
     .loading-indicator.hidden {
-      opacity: 0;
-      pointer-events: none;
+      display: none;
     }
 
+    /* Prevent any transitions during loading */
+    .loading * {
+      transition: none !important;
+      animation: none !important;
+    }
   </style>
 </head>
-<body>
+<body class="loading">
   <div class="loading-indicator" id="loadingIndicator">Loading underwater world...</div>
 
-  <div class="parallax-container">
-    <div class="layer layer1">
-      <img src="images/layer1.png" alt="Layer 1" />
-      <img src="images/layer1.png" alt="Layer 1 duplicate" />
+  <div class="parallax-container" id="parallaxContainer">
+    <div class="layer layer1" data-layer="1">
+      <img src="images/layer1.png" alt="Layer 1" data-img="1" />
+      <img src="images/layer1.png" alt="Layer 1 duplicate" data-img="2" />
     </div>
-    <div class="layer layer2">
-      <img src="images/layer2.png" alt="Layer 2" />
-      <img src="images/layer2.png" alt="Layer 2 duplicate" />
+    <div class="layer layer2" data-layer="2">
+      <img src="images/layer2.png" alt="Layer 2" data-img="1" />
+      <img src="images/layer2.png" alt="Layer 2 duplicate" data-img="2" />
     </div>
-    <div class="layer layer3">
-      <img src="images/layer3.png" alt="Layer 3" />
-      <img src="images/layer3.png" alt="Layer 3 duplicate" />
+    <div class="layer layer3" data-layer="3">
+      <img src="images/layer3.png" alt="Layer 3" data-img="1" />
+      <img src="images/layer3.png" alt="Layer 3 duplicate" data-img="2" />
     </div>
-    <div class="layer layer4">
-      <img src="images/layer4.png" alt="Layer 4" />
-      <img src="images/layer4.png" alt="Layer 4 duplicate" />
+    <div class="layer layer4" data-layer="4">
+      <img src="images/layer4.png" alt="Layer 4" data-img="1" />
+      <img src="images/layer4.png" alt="Layer 4 duplicate" data-img="2" />
     </div>
-    <div class="layer layer5">
-      <img src="images/layer5.png" alt="Layer 5" />
-      <img src="images/layer5.png" alt="Layer 5 duplicate" />
+    <div class="layer layer5" data-layer="5">
+      <img src="images/layer5.png" alt="Layer 5" data-img="1" />
+      <img src="images/layer5.png" alt="Layer 5 duplicate" data-img="2" />
     </div>
-    <div class="layer layer6">
-      <img src="images/layer6.png" alt="Layer 6" />
-      <img src="images/layer6.png" alt="Layer 6 duplicate" />
+    <div class="layer layer6" data-layer="6">
+      <img src="images/layer6.png" alt="Layer 6" data-img="1" />
+      <img src="images/layer6.png" alt="Layer 6 duplicate" data-img="2" />
     </div>
   </div>
 
   <div class="info-button" onclick="showInfo()"></div>
 
   <script>
-    // Image preloading and management
-    let loadedLayers = 0;
-    const totalLayers = 6;
-    let allImagesLoaded = false;
+    let loadedImages = new Set();
+    let allLayersReady = false;
+    let currentScale = 1;
+    let isScaling = false;
 
-    function preloadImages() {
-      const imagePromises = [];
-  
-      for (let i = 1; i <= totalLayers; i++) {
-        for (let j = 0; j < 2; j++) { // preload both copies
-          const promise = new Promise((resolve, reject) => {
-            const img = new Image();
-            img.onload = () => {
-              loadedLayers++;
-              updateLoadingProgress();
-              resolve();
-            };
-            img.onerror = reject;
-            img.src = `images/layer${i}.png`;
-          });
-          imagePromises.push(promise);
-        }
-      }
-
-      return Promise.all(imagePromises);
-    }
+    // Track image loading per layer
+    const layerImageStatus = {
+      1: { loaded: 0, total: 2 },
+      2: { loaded: 0, total: 2 },
+      3: { loaded: 0, total: 2 },
+      4: { loaded: 0, total: 2 },
+      5: { loaded: 0, total: 2 },
+      6: { loaded: 0, total: 2 }
+    };
 
     function updateLoadingProgress() {
+      const totalLoaded = Object.values(layerImageStatus).reduce((sum, layer) => sum + layer.loaded, 0);
+      const totalImages = Object.values(layerImageStatus).reduce((sum, layer) => sum + layer.total, 0);
+      
       const loadingIndicator = document.getElementById('loadingIndicator');
       if (loadingIndicator) {
-        loadingIndicator.textContent = `Loading... ${loadedLayers}/${totalLayers}`;
+        loadingIndicator.textContent = `Loading... ${totalLoaded}/${totalImages}`;
       }
     }
 
-    function showLayersWhenReady() {
-      const layers = document.querySelectorAll('.layer');
-      const loadingIndicator = document.getElementById('loadingIndicator');
+    function onImageLoad(img) {
+      const layer = parseInt(img.closest('.layer').dataset.layer);
+      layerImageStatus[layer].loaded++;
       
-      // Show layers with a slight stagger for smooth appearance
-      layers.forEach((layer, index) => {
+      updateLoadingProgress();
+      
+      // Check if this layer is complete
+      if (layerImageStatus[layer].loaded === layerImageStatus[layer].total) {
+        const layerElement = img.closest('.layer');
+        // Small delay to ensure both images are fully rendered
         setTimeout(() => {
-          layer.classList.add('loaded');
-        }, index * 100);
-      });
-
-      // Hide loading indicator
-      if (loadingIndicator) {
-        setTimeout(() => {
-          loadingIndicator.classList.add('hidden');
-        }, 500);
+          layerElement.classList.add('loaded');
+        }, 50);
       }
+      
+      // Check if all layers are complete
+      const allComplete = Object.values(layerImageStatus).every(layer => layer.loaded === layer.total);
+      if (allComplete && !allLayersReady) {
+        setTimeout(() => {
+          finishLoading();
+        }, 200);
+      }
+    }
 
-      allImagesLoaded = true;
+    function finishLoading() {
+      allLayersReady = true;
+      
+      // Remove loading class to re-enable transitions
+      document.body.classList.remove('loading');
+      
+      // Show the parallax container
+      const container = document.getElementById('parallaxContainer');
+      container.classList.add('ready');
+      
+      // Hide loading indicator
+      const loadingIndicator = document.getElementById('loadingIndicator');
+      if (loadingIndicator) {
+        loadingIndicator.classList.add('hidden');
+      }
+      
+      // Initial scaling
+      setTimeout(() => {
+        scaleForViewport();
+      }, 100);
+      
+      console.log('All layers loaded and ready!');
+    }
+
+    // Set up image loading handlers
+    function setupImageLoading() {
+      const images = document.querySelectorAll('.layer img');
+      images.forEach(img => {
+        if (img.complete && img.naturalWidth > 0) {
+          // Image already loaded
+          onImageLoad(img);
+        } else {
+          img.addEventListener('load', () => onImageLoad(img));
+          img.addEventListener('error', (e) => {
+            console.error('Failed to load image:', e.target.src);
+            // Still count as "loaded" to prevent hanging
+            onImageLoad(img);
+          });
+        }
+      });
     }
 
     function getActualViewportSize() {
-      // Try to get the most accurate viewport dimensions on mobile
       let width, height;
       
       if (window.visualViewport) {
@@ -302,13 +400,10 @@
         height = window.innerHeight;
       }
       
-      // Additional check for mobile landscape viewport issues
       if (screen.orientation && Math.abs(screen.orientation.angle) === 90) {
-        // In landscape mode, use screen dimensions if they seem more reliable
         const screenWidth = screen.width;
         const screenHeight = screen.height;
         
-        // Use screen dimensions if they're larger (which they should be in landscape)
         if (screenWidth > width || screenHeight > height) {
           width = Math.max(screenWidth, screenHeight);
           height = Math.min(screenWidth, screenHeight);
@@ -319,69 +414,69 @@
     }
 
     function scaleForViewport() {
-      // Don't scale until images are loaded to prevent flickering
-      if (!allImagesLoaded) return;
-
-      const container = document.querySelector('.parallax-container');
+      if (!allLayersReady || isScaling) return;
+      
+      isScaling = true;
+      
+      const container = document.getElementById('parallaxContainer');
       const viewport = getActualViewportSize();
       
       const scaleX = viewport.width / 1920;
       const scaleY = viewport.height / 1080;
       const baseScale = Math.max(scaleX, scaleY);
       const scale = baseScale * 1.05;
-
-      const scaledWidth = 1920 * scale;
-      const scaledHeight = 1080 * scale;
-
-      const offsetX = (scaledWidth - viewport.width) / 2;
-      const offsetY = (scaledHeight - viewport.height) / 2;
-
-      // Use requestAnimationFrame for smoother transforms
-      requestAnimationFrame(() => {
-        container.style.transform = `translate(-50%, 0) scale(${scale})`;
-        container.style.left = '50%';
-        container.style.top = `-${offsetY / scale}px`;
-      });
       
-      // Debug info for mobile testing
+      // Only update if scale changed significantly
+      if (Math.abs(scale - currentScale) > 0.001) {
+        currentScale = scale;
+        
+        const scaledHeight = 1080 * scale;
+        const offsetY = (scaledHeight - viewport.height) / 2;
+        
+        // Apply transform in single operation
+        requestAnimationFrame(() => {
+          container.style.transform = `translate(-50%, -${offsetY / scale}px) scale(${scale})`;
+          
+          setTimeout(() => {
+            isScaling = false;
+          }, 100);
+        });
+      } else {
+        isScaling = false;
+      }
+      
       console.log(`Viewport: ${viewport.width}x${viewport.height}, Scale: ${scale.toFixed(3)}`);
     }
 
+    // Debounced event handlers
     let resizeTimeout;
+    let orientationTimeout;
+
     function handleResize() {
       clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(() => {
-        scaleForViewport();
-      }, 100);
+      resizeTimeout = setTimeout(scaleForViewport, 150);
     }
 
-    // Debounced orientation change handler to reduce flickering
-    let orientationTimeout;
     function handleOrientationChange() {
       clearTimeout(orientationTimeout);
-      orientationTimeout = setTimeout(() => {
-        scaleForViewport();
-      }, 600);
+      orientationTimeout = setTimeout(scaleForViewport, 800);
     }
 
-    // Standard resize handler
-    window.addEventListener('resize', handleResize);
+    // Event listeners
+    window.addEventListener('resize', handleResize, { passive: true });
     
-    // Mobile-specific orientation change handler
     if (screen.orientation) {
       screen.orientation.addEventListener('change', handleOrientationChange);
     } else {
-      // Fallback for older mobile browsers
       window.addEventListener('orientationchange', handleOrientationChange);
     }
     
-    // Visual viewport handler for mobile browsers that support it
     if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', handleResize);
+      window.visualViewport.addEventListener('resize', handleResize, { passive: true });
     }
 
     function showInfo() {
-      if (document.querySelector('.modal')) return; // Only one modal at a time
+      if (document.querySelector('.modal')) return;
 
       const modal = document.createElement('div');
       modal.className = 'modal';
@@ -465,7 +560,7 @@
     }
 
     function spawnTravelingGif(gifs, isValentinesDay) {
-      if (document.hidden || !allImagesLoaded) {
+      if (document.hidden || !allLayersReady) {
         setTimeout(() => spawnTravelingGif(gifs, isValentinesDay), 2000 + Math.random() * 4000);
         return;
       }
@@ -479,7 +574,7 @@
       const pokemonName = randomGif.replace(/^\d+\s*-\s*/, '').replace('.gif', '');
       gif.alt = `${useShiny === 'shiny' ? 'Shiny ' : ''}${pokemonName} swimming`;
 
-      const container = document.querySelector('.parallax-container');
+      const container = document.getElementById('parallaxContainer');
       container.appendChild(gif);
 
       const layerZ = Math.floor(Math.random() * 4) + 3;
@@ -512,30 +607,32 @@
     // Initialize everything
     async function initialize() {
       try {
-        // Preload parallax images first
-        await preloadImages();
-        showLayersWhenReady();
+        // Set up image loading tracking
+        setupImageLoading();
         
-        // Initial scaling after images load
-        setTimeout(scaleForViewport, 100);
-        
-        // Load Pokemon GIFs and start spawning
+        // Load Pokemon data in parallel
         const gifs = await fetchGifList();
         const today = new Date();
         const isValentinesDay = today.getMonth() === 1 && today.getDate() === 14;
         
-        // Wait a bit before starting Pokemon spawning
-        setTimeout(() => {
-          spawnTravelingGif(gifs, isValentinesDay);
-        }, 1000);
+        // Wait for layers to be ready, then start Pokemon spawning
+        const checkReady = () => {
+          if (allLayersReady) {
+            setTimeout(() => {
+              spawnTravelingGif(gifs, isValentinesDay);
+            }, 1000);
+          } else {
+            setTimeout(checkReady, 100);
+          }
+        };
+        checkReady();
         
       } catch (error) {
         console.error("Failed to initialize:", error);
-        showLayersWhenReady(); // Show anyway even if preload failed
       }
     }
 
-    // Start initialization when page loads
+    // Start initialization
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initialize);
     } else {
