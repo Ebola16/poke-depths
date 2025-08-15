@@ -15,31 +15,37 @@
 
     body {
       margin: 0;
+      padding: 0;
       background: #002233;
-      height: 100vh;
-      width: 100vw;
       position: fixed;
       top: 0;
       left: 0;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      /* Allow horizontal scrolling on portrait, hide on landscape */
-      overflow-x: auto;
-      overflow-y: hidden;
+      /* Default: no scrolling */
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
     }
 
-    /* Landscape: fit entire scene in viewport */
-    @media (orientation: landscape) {
+    /* Portrait: allow horizontal scrolling only when needed */
+    @media (orientation: portrait) {
       body {
-        overflow: hidden;
+        position: absolute;
+        overflow-x: auto;
+        overflow-y: hidden;
+        height: 100vh;
+        /* Width will be set dynamically by JavaScript */
       }
     }
 
-    /* Portrait: allow horizontal scrolling */
-    @media (orientation: portrait) {
+    /* Landscape: no scrolling */
+    @media (orientation: landscape) {
       body {
-        overflow-x: auto;
-        overflow-y: hidden;
+        position: fixed;
+        overflow: hidden;
+        width: 100vw;
+        height: 100vh;
       }
     }
 
@@ -457,16 +463,21 @@
         // Start at left for horizontal scrolling
         offsetX = 0;
         
-        // Set body width to enable horizontal scrolling when needed
+        // Set body dimensions to match exactly what's rendered
         if (scaledWidth > viewport.width) {
+          // Content wider than viewport - enable horizontal scrolling
           document.body.style.width = `${scaledWidth}px`;
+          document.body.style.height = `${viewport.height}px`;
+          document.body.style.position = 'absolute';
         } else {
+          // Content fits in viewport - center it, no scrolling needed
           document.body.style.width = '100vw';
-          // Center horizontally if content is smaller than viewport
+          document.body.style.height = '100vh';
+          document.body.style.position = 'fixed';
           offsetX = (viewport.width - scaledWidth) / 2;
         }
         
-        console.log(`Portrait: Scale ${scale.toFixed(3)}, Content: ${scaledWidth}x${scaledHeight}, Viewport: ${viewport.width}x${viewport.height}`);
+        console.log(`Portrait: Scale ${scale.toFixed(3)}, Content: ${scaledWidth}x${scaledHeight}, Viewport: ${viewport.width}x${viewport.height}, Body width: ${document.body.style.width}`);
         
       } else {
         // Landscape: Scale to fill viewport completely, no scrolling (crop if needed)
@@ -481,8 +492,10 @@
         offsetX = (viewport.width - scaledWidth) / 2;
         offsetY = (viewport.height - scaledHeight) / 2;
         
-        // Reset body width for landscape
+        // Set body to fixed viewport size - no scrolling
         document.body.style.width = '100vw';
+        document.body.style.height = '100vh';
+        document.body.style.position = 'fixed';
         
         console.log(`Landscape: Scale ${scale.toFixed(3)}, Content: ${scaledWidth}x${scaledHeight}, Viewport: ${viewport.width}x${viewport.height}`);
       }
