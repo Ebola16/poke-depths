@@ -15,7 +15,6 @@
 
     body {
       margin: 0;
-      overflow: hidden;
       background: #002233;
       height: 100vh;
       width: 100vw;
@@ -24,6 +23,24 @@
       left: 0;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      /* Allow horizontal scrolling on portrait, hide on landscape */
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
+    /* Landscape: fit entire scene in viewport */
+    @media (orientation: landscape) {
+      body {
+        overflow: hidden;
+      }
+    }
+
+    /* Portrait: allow horizontal scrolling */
+    @media (orientation: portrait) {
+      body {
+        overflow-x: auto;
+        overflow-y: hidden;
+      }
     }
 
     .parallax-container {
@@ -395,18 +412,24 @@
       let height = window.innerHeight;
       
       // Try visualViewport first (most accurate on modern mobile browsers)
+      // This accounts for browser bars automatically
       if (window.visualViewport) {
         width = window.visualViewport.width;
         height = window.visualViewport.height;
       }
       
-      // Fallback for older browsers or when visualViewport isn't reliable
+      // Fallback for older browsers
       if (width <= 0 || height <= 0) {
         width = document.documentElement.clientWidth || window.innerWidth;
         height = document.documentElement.clientHeight || window.innerHeight;
       }
       
       return { width: Math.round(width), height: Math.round(height) };
+    }
+
+    function isPortraitOrientation() {
+      const viewport = getActualViewportSize();
+      return viewport.height > viewport.width;
     }
 
     function scaleForViewport() {
@@ -416,38 +439,66 @@
       
       const container = document.getElementById('parallaxContainer');
       const viewport = getActualViewportSize();
+      const isPortrait = isPortraitOrientation();
       
-      // Calculate scale to fill viewport completely
-      const scaleX = viewport.width / 1920;
-      const scaleY = viewport.height / 1080;
-      const scale = Math.max(scaleX, scaleY) * 1.05; // Small buffer to ensure full coverage
+      let scale, offsetX = 0, offsetY = 0;
+      
+      if (isPortrait) {
+        // Portrait: Scale to fill viewport completely, allow horizontal scrolling
+        const scaleX = viewport.width / 1920;
+        const scaleY = viewport.height / 1080;
+        scale = Math.max(scaleX, scaleY); // Fill viewport, crop if needed
+        
+        const scaledWidth = 1920 * scale;
+        const scaledHeight = 1080 * scale;
+        
+        // Center vertically if there's extra height
+        offsetY = Math.max(0, (viewport.height - scaledHeight) / 2);
+        // Start at left for horizontal scrolling
+        offsetX = 0;
+        
+        // Set body width to enable horizontal scrolling when needed
+        if (scaledWidth > viewport.width) {
+          document.body.style.width = `${scaledWidth}px`;
+        } else {
+          document.body.style.width = '100vw';
+          // Center horizontally if content is smaller than viewport
+          offsetX = (viewport.width - scaledWidth) / 2;
+        }
+        
+        console.log(`Portrait: Scale ${scale.toFixed(3)}, Content: ${scaledWidth}x${scaledHeight}, Viewport: ${viewport.width}x${viewport.height}`);
+        
+      } else {
+        // Landscape: Scale to fill viewport completely, no scrolling (crop if needed)
+        const scaleX = viewport.width / 1920;
+        const scaleY = viewport.height / 1080;
+        scale = Math.max(scaleX, scaleY); // Fill viewport completely, crop if needed
+        
+        const scaledWidth = 1920 * scale;
+        const scaledHeight = 1080 * scale;
+        
+        // Center the content (this will crop edges if content is larger than viewport)
+        offsetX = (viewport.width - scaledWidth) / 2;
+        offsetY = (viewport.height - scaledHeight) / 2;
+        
+        // Reset body width for landscape
+        document.body.style.width = '100vw';
+        
+        console.log(`Landscape: Scale ${scale.toFixed(3)}, Content: ${scaledWidth}x${scaledHeight}, Viewport: ${viewport.width}x${viewport.height}`);
+      }
       
       // Only update if scale changed significantly
       if (Math.abs(scale - currentScale) > 0.01) {
         currentScale = scale;
         
-        // Calculate positioning to center the scaled content
-        const scaledWidth = 1920 * scale;
-        const scaledHeight = 1080 * scale;
-        
-        // Center the container
-        const offsetX = (viewport.width - scaledWidth) / 2;
-        const offsetY = (viewport.height - scaledHeight) / 2;
-        
         // Apply transform in single operation
         requestAnimationFrame(() => {
-          // Reset transform origin and positioning
-          container.style.transformOrigin = 'top left';
-          container.style.left = '0px';
-          container.style.top = '0px';
           container.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
           
           setTimeout(() => {
             isScaling = false;
           }, 100);
         });
-        
-        console.log(`Viewport: ${viewport.width}x${viewport.height}, Scale: ${scale.toFixed(3)}, Offset: ${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}`);
       } else {
         isScaling = false;
       }
