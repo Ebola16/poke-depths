@@ -22,31 +22,15 @@
       left: 0;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      /* Default: no scrolling */
+      /* No scrolling in any orientation */
       overflow: hidden;
       width: 100vw;
       height: 100vh;
-    }
-
-    /* Portrait: allow horizontal scrolling only when needed */
-    @media (orientation: portrait) {
-      body {
-        position: absolute;
-        overflow-x: auto;
-        overflow-y: hidden;
-        height: 100vh;
-        /* Width will be set dynamically by JavaScript */
-      }
-    }
-
-    /* Landscape: no scrolling */
-    @media (orientation: landscape) {
-      body {
-        position: fixed;
-        overflow: hidden;
-        width: 100vw;
-        height: 100vh;
-      }
+      /* Prevent touch scrolling on mobile */
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: none;
+      /* Prevent pull-to-refresh and other gestures */
+      touch-action: none;
     }
 
     .parallax-container {
@@ -199,8 +183,6 @@
 
     .info-button {
       position: fixed;
-      bottom: 20px;
-      left: 20px;
       width: 50px;
       height: 50px;
       background: rgba(0, 0, 0, 0.5);
@@ -214,6 +196,48 @@
       transition: all 0.3s ease;
       -webkit-backdrop-filter: blur(5px);
       backdrop-filter: blur(5px);
+      /* Default position for larger screens */
+      bottom: 20px;
+      left: 20px;
+    }
+
+    /* Mobile-specific positioning */
+    @media (max-width: 768px) {
+      .info-button {
+        /* Position relative to safe area */
+        bottom: max(10px, env(safe-area-inset-bottom, 10px));
+        left: max(10px, env(safe-area-inset-left, 10px));
+        width: 40px;
+        height: 40px;
+      }
+    }
+
+    /* Landscape mobile - ensure button stays in viewport */
+    @media (max-width: 768px) and (orientation: landscape) {
+      .info-button {
+        bottom: max(5px, env(safe-area-inset-bottom, 5px));
+        left: max(5px, env(safe-area-inset-left, 5px));
+        width: 35px;
+        height: 35px;
+      }
+      
+      .info-button::before {
+        font-size: 18px;
+      }
+    }
+
+    /* Very small landscape screens */
+    @media (max-height: 500px) {
+      .info-button {
+        bottom: 5px;
+        left: 5px;
+        width: 30px;
+        height: 30px;
+      }
+      
+      .info-button::before {
+        font-size: 16px;
+      }
     }
 
     .info-button:hover {
@@ -244,6 +268,8 @@
       z-index: 2000;
       -webkit-backdrop-filter: blur(10px);
       backdrop-filter: blur(10px);
+      /* Prevent scrolling behind modal */
+      overflow: hidden;
     }
 
     .modal-content {
@@ -252,16 +278,21 @@
       border-radius: 15px;
       padding: 30px;
       max-width: 400px;
+      max-height: 90vh;
+      overflow-y: auto;
       text-align: center;
       color: white;
       font-family: Arial, sans-serif;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      /* Ensure modal content doesn't get cut off */
+      margin: 10px;
     }
 
-    @media (max-height: 500px) {
+    @media (max-width: 480px) {
       .modal-content {
-        max-height: 90vh;
-        overflow-y: auto;
+        padding: 20px;
+        max-width: 90vw;
+        font-size: 14px;
       }
     }
 
@@ -449,56 +480,24 @@
       
       let scale, offsetX = 0, offsetY = 0;
       
-      if (isPortrait) {
-        // Portrait: Scale to fill viewport completely, allow horizontal scrolling
-        const scaleX = viewport.width / 1920;
-        const scaleY = viewport.height / 1080;
-        scale = Math.max(scaleX, scaleY); // Fill viewport, crop if needed
-        
-        const scaledWidth = 1920 * scale;
-        const scaledHeight = 1080 * scale;
-        
-        // Center vertically if there's extra height
-        offsetY = Math.max(0, (viewport.height - scaledHeight) / 2);
-        // Start at left for horizontal scrolling
-        offsetX = 0;
-        
-        // Set body dimensions to match exactly what's rendered
-        if (scaledWidth > viewport.width) {
-          // Content wider than viewport - enable horizontal scrolling
-          document.body.style.width = `${scaledWidth}px`;
-          document.body.style.height = `${viewport.height}px`;
-          document.body.style.position = 'absolute';
-        } else {
-          // Content fits in viewport - center it, no scrolling needed
-          document.body.style.width = '100vw';
-          document.body.style.height = '100vh';
-          document.body.style.position = 'fixed';
-          offsetX = (viewport.width - scaledWidth) / 2;
-        }
-        
-        console.log(`Portrait: Scale ${scale.toFixed(3)}, Content: ${scaledWidth}x${scaledHeight}, Viewport: ${viewport.width}x${viewport.height}, Body width: ${document.body.style.width}`);
-        
-      } else {
-        // Landscape: Scale to fill viewport completely, no scrolling (crop if needed)
-        const scaleX = viewport.width / 1920;
-        const scaleY = viewport.height / 1080;
-        scale = Math.max(scaleX, scaleY); // Fill viewport completely, crop if needed
-        
-        const scaledWidth = 1920 * scale;
-        const scaledHeight = 1080 * scale;
-        
-        // Center the content (this will crop edges if content is larger than viewport)
-        offsetX = (viewport.width - scaledWidth) / 2;
-        offsetY = (viewport.height - scaledHeight) / 2;
-        
-        // Set body to fixed viewport size - no scrolling
-        document.body.style.width = '100vw';
-        document.body.style.height = '100vh';
-        document.body.style.position = 'fixed';
-        
-        console.log(`Landscape: Scale ${scale.toFixed(3)}, Content: ${scaledWidth}x${scaledHeight}, Viewport: ${viewport.width}x${viewport.height}`);
-      }
+      // Always use the same scaling logic - fill viewport completely, no scrolling
+      const scaleX = viewport.width / 1920;
+      const scaleY = viewport.height / 1080;
+      scale = Math.max(scaleX, scaleY); // Fill viewport completely, crop if needed
+      
+      const scaledWidth = 1920 * scale;
+      const scaledHeight = 1080 * scale;
+      
+      // Center the content (this will crop edges if content is larger than viewport)
+      offsetX = (viewport.width - scaledWidth) / 2;
+      offsetY = (viewport.height - scaledHeight) / 2;
+      
+      // Set body to fixed viewport size - no scrolling in any orientation
+      document.body.style.width = '100vw';
+      document.body.style.height = '100vh';
+      document.body.style.position = 'fixed';
+      
+      console.log(`${isPortrait ? 'Portrait' : 'Landscape'}: Scale ${scale.toFixed(3)}, Content: ${scaledWidth}x${scaledHeight}, Viewport: ${viewport.width}x${viewport.height}`);
       
       // Only update if scale changed significantly
       if (Math.abs(scale - currentScale) > 0.01) {
