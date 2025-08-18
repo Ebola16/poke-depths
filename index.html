@@ -29,8 +29,6 @@
       /* Prevent touch scrolling on mobile */
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: none;
-      /* Prevent pull-to-refresh and other gestures */
-      touch-action: none;
     }
 
     .parallax-container {
@@ -203,8 +201,8 @@
     @media (max-width: 768px) {
       .info-button {
         /* Position relative to safe area */
-        bottom: max(10px, env(safe-area-inset-bottom, 10px));
-        left: max(10px, env(safe-area-inset-left, 10px));
+        bottom: center(env(safe-area-inset-bottom, 10px));
+        left: center(env(safe-area-inset-left, 10px));
         width: 40px;
         height: 40px;
       }
@@ -213,8 +211,8 @@
     /* Landscape mobile - ensure button stays in viewport */
     @media (max-width: 768px) and (orientation: landscape) {
       .info-button {
-        bottom: max(5px, env(safe-area-inset-bottom, 5px));
-        left: max(5px, env(safe-area-inset-left, 5px));
+        bottom: center(env(safe-area-inset-bottom, 5px));
+        left: center(env(safe-area-inset-left, 5px));
         width: 35px;
         height: 35px;
       }
@@ -227,8 +225,8 @@
     /* Very small landscape screens */
     @media (max-height: 500px) {
       .info-button {
-        bottom: 5px;
-        left: 5px;
+        bottom: center(env(safe-area-inset-bottom, 5px));
+        left: center(env(safe-area-inset-left, 5px));
         width: 30px;
         height: 30px;
       }
@@ -587,16 +585,11 @@
     }
 
     async function fetchGifList() {
-      try {
-        const response = await fetch('data/images.json');
-        if (!response.ok) throw new Error("Failed to load images.json");
-        const list = await response.json();
-        if (!Array.isArray(list) || list.length === 0) throw new Error("images.json empty");
-        return list;
-      } catch (error) {
-        console.warn("Using fallback gif list:", error);
-        return ["pokemon1.gif", "pokemon2.gif", "pokemon3.gif"];
-      }
+      const response = await fetch('data/images.json');
+      if (!response.ok) throw new Error("Failed to load images.json");
+      const list = await response.json();
+      if (!Array.isArray(list) || list.length === 0) throw new Error("images.json empty");
+      return list;
     }
 
     const gifPool = [];
