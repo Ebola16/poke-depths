@@ -199,45 +199,6 @@
       left: 20px;
     }
 
-    /* Mobile-specific positioning */
-    @media (max-width: 768px) {
-      .info-button {
-        /* Position relative to safe area */
-        bottom: center(env(safe-area-inset-bottom, 10px));
-        left: center(env(safe-area-inset-left, 10px));
-        width: 40px;
-        height: 40px;
-      }
-    }
-
-    /* Landscape mobile - ensure button stays in viewport */
-    @media (max-width: 768px) and (orientation: landscape) {
-      .info-button {
-        bottom: center(env(safe-area-inset-bottom, 5px));
-        left: center(env(safe-area-inset-left, 5px));
-        width: 35px;
-        height: 35px;
-      }
-      
-      .info-button::before {
-        font-size: 18px;
-      }
-    }
-
-    /* Very small landscape screens */
-    @media (max-height: 500px) {
-      .info-button {
-        bottom: center(env(safe-area-inset-bottom, 5px));
-        left: center(env(safe-area-inset-left, 5px));
-        width: 30px;
-        height: 30px;
-      }
-      
-      .info-button::before {
-        font-size: 16px;
-      }
-    }
-
     .info-button:hover {
       background: rgba(0, 0, 0, 0.7);
       border-color: rgba(255, 255, 255, 0.5);
