@@ -132,8 +132,8 @@ body {
 
 .info-button {
   position: fixed;
-  bottom: max(15px, env(safe-area-inset-bottom));
-  left: max(15px, env(safe-area-inset-left));
+  bottom: calc(15px + env(safe-area-inset-bottom, 0px));
+  left: calc(15px + env(safe-area-inset-left, 0px));
   width: 50px;
   height: 50px;
   background: rgba(0, 0, 0, 0.5);
@@ -165,16 +165,12 @@ body {
   transform: scale(1.1);
 }
 
-/* Mobile adjustments */
 @media (max-width: 768px) {
   .info-button {
     width: 35px;
     height: 35px;
-    bottom: max(10px, env(safe-area-inset-bottom));
-    left: max(10px, env(safe-area-inset-left));
-  }
-  .info-button::before {
-    font-size: 16px;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    left: calc(10px + env(safe-area-inset-left, 0px));
   }
 }
 
