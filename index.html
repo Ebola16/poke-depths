@@ -22,14 +22,11 @@
       left: 0;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      /* No scrolling in any orientation */
       overflow: hidden;
       width: 100vw;
       height: 100vh;
-      /* Prevent touch scrolling on mobile */
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: none;
-      /* Prevent pull-to-refresh and other gestures */
       touch-action: none;
     }
 
@@ -43,14 +40,12 @@
       background: #002233;
       transform-origin: top left;
       box-sizing: border-box;
-      /* Critical for preventing flickering */
       -webkit-backface-visibility: hidden;
       backface-visibility: hidden;
       -webkit-perspective: 1000px;
       perspective: 1000px;
       -webkit-transform-style: preserve-3d;
       transform-style: preserve-3d;
-      /* Hide entire container until ready */
       visibility: hidden;
     }
 
@@ -67,15 +62,12 @@
       width: 3840px;
       animation-timing-function: linear;
       animation-iteration-count: infinite;
-      /* Force hardware acceleration */
       -webkit-transform: translate3d(0, 0, 0);
       transform: translate3d(0, 0, 0);
       -webkit-backface-visibility: hidden;
       backface-visibility: hidden;
-      /* Prevent sub-pixel rendering issues */
       -webkit-transform-style: preserve-3d;
       transform-style: preserve-3d;
-      /* Hide layer until both images are loaded */
       opacity: 0;
       transition: none;
     }
@@ -96,21 +88,13 @@
       margin: 0;
       padding: 0;
       border: none;
-      /* Critical: Remove the margin that causes seams */
       margin-right: 0;
-      /* Prevent image flickering */
       -webkit-backface-visibility: hidden;
       backface-visibility: hidden;
       image-rendering: -webkit-optimize-contrast;
       image-rendering: optimize-contrast;
-      /* Ensure crisp edges */
       -webkit-transform: translateZ(0);
       transform: translateZ(0);
-    }
-
-    /* Ensure seamless tiling */
-    .layer img:first-child {
-      margin-right: 0;
     }
 
     .layer img:last-child {
@@ -125,14 +109,8 @@
     .layer6 { z-index: 6; animation-name: scroll; animation-duration: 20s; }
 
     @keyframes scroll {
-      from { 
-        -webkit-transform: translate3d(0, 0, 0);
-        transform: translate3d(0, 0, 0); 
-      }
-      to { 
-        -webkit-transform: translate3d(-1920px, 0, 0);
-        transform: translate3d(-1920px, 0, 0); 
-      }
+      from { transform: translate3d(0, 0, 0); }
+      to { transform: translate3d(-1920px, 0, 0); }
     }
 
     .traveling-gif {
@@ -147,36 +125,18 @@
     }
 
     @keyframes moveLTR {
-      from { 
-        -webkit-transform: translateX(-200px);
-        transform: translateX(-200px); 
-      }
-      to { 
-        -webkit-transform: translateX(2120px);
-        transform: translateX(2120px); 
-      }
+      from { transform: translateX(-200px); }
+      to { transform: translateX(2120px); }
     }
 
     @keyframes moveLTRFlipped {
-      from { 
-        -webkit-transform: translateX(-200px) scaleX(-1);
-        transform: translateX(-200px) scaleX(-1); 
-      }
-      to { 
-        -webkit-transform: translateX(2120px) scaleX(-1);
-        transform: translateX(2120px) scaleX(-1); 
-      }
+      from { transform: translateX(-200px) scaleX(-1); }
+      to { transform: translateX(2120px) scaleX(-1); }
     }
 
     @keyframes moveRTL {
-      from { 
-        -webkit-transform: translateX(1920px);
-        transform: translateX(1920px); 
-      }
-      to { 
-        -webkit-transform: translateX(-200px);
-        transform: translateX(-200px); 
-      }
+      from { transform: translateX(1920px); }
+      to { transform: translateX(-200px); }
     }
 
     .info-button {
@@ -194,12 +154,11 @@
       transition: all 0.3s ease;
       -webkit-backdrop-filter: blur(5px);
       backdrop-filter: blur(5px);
-      /* Default position for larger screens */
       bottom: 20px;
       left: 20px;
+      text-decoration: none;
     }
 
-    /* Mobile-specific positioning */
     @media (max-width: 768px) {
       .info-button {
         bottom: auto;
@@ -210,7 +169,6 @@
       }
     }
 
-    /* Landscape mobile - ensure button stays in viewport */
     @media (max-width: 768px) and (orientation: landscape) {
       .info-button {
         bottom: auto;
@@ -219,13 +177,9 @@
         height: 35px;
         transform: translate(10px, 10px);
       }
-      
-      .info-button::before {
-        font-size: 18px;
-      }
+      .info-button::before { font-size: 18px; }
     }
 
-    /* Very small landscape screens */
     @media (max-height: 500px) {
       .info-button {
         bottom: auto;
@@ -234,10 +188,7 @@
         height: 30px;
         transform: translate(5px, 5px);
       }
-      
-      .info-button::before {
-        font-size: 16px;
-      }
+      .info-button::before { font-size: 16px; }
     }
 
     .info-button:hover {
@@ -253,47 +204,6 @@
       font-size: 24px;
       font-weight: bold;
       font-style: italic;
-    }
-
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 2000;
-      -webkit-backdrop-filter: blur(10px);
-      backdrop-filter: blur(10px);
-      /* Prevent scrolling behind modal */
-      overflow: hidden;
-    }
-
-    .modal-content {
-      background: rgba(0, 34, 51, 0.95);
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-radius: 15px;
-      padding: 30px;
-      max-width: 400px;
-      max-height: 90vh;
-      overflow-y: auto;
-      text-align: center;
-      color: white;
-      font-family: Arial, sans-serif;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-      /* Ensure modal content doesn't get cut off */
-      margin: 10px;
-    }
-
-    @media (max-width: 480px) {
-      .modal-content {
-        padding: 20px;
-        max-width: 90vw;
-        font-size: 14px;
-      }
     }
 
     .loading-indicator {
@@ -312,7 +222,6 @@
       display: none;
     }
 
-    /* Prevent any transitions during loading */
     .loading * {
       transition: none !important;
       animation: none !important;
@@ -324,32 +233,33 @@
 
   <div class="parallax-container" id="parallaxContainer">
     <div class="layer layer1" data-layer="1">
-      <img src="images/layer1.png" alt="Layer 1" data-img="1" />
-      <img src="images/layer1.png" alt="Layer 1 duplicate" data-img="2" />
+      <img src="images/layer1.png" alt="Layer 1" />
+      <img src="images/layer1.png" alt="Layer 1 duplicate" />
     </div>
     <div class="layer layer2" data-layer="2">
-      <img src="images/layer2.png" alt="Layer 2" data-img="1" />
-      <img src="images/layer2.png" alt="Layer 2 duplicate" data-img="2" />
+      <img src="images/layer2.png" alt="Layer 2" />
+      <img src="images/layer2.png" alt="Layer 2 duplicate" />
     </div>
     <div class="layer layer3" data-layer="3">
-      <img src="images/layer3.png" alt="Layer 3" data-img="1" />
-      <img src="images/layer3.png" alt="Layer 3 duplicate" data-img="2" />
+      <img src="images/layer3.png" alt="Layer 3" />
+      <img src="images/layer3.png" alt="Layer 3 duplicate" />
     </div>
     <div class="layer layer4" data-layer="4">
-      <img src="images/layer4.png" alt="Layer 4" data-img="1" />
-      <img src="images/layer4.png" alt="Layer 4 duplicate" data-img="2" />
+      <img src="images/layer4.png" alt="Layer 4" />
+      <img src="images/layer4.png" alt="Layer 4 duplicate" />
     </div>
     <div class="layer layer5" data-layer="5">
-      <img src="images/layer5.png" alt="Layer 5" data-img="1" />
-      <img src="images/layer5.png" alt="Layer 5 duplicate" data-img="2" />
+      <img src="images/layer5.png" alt="Layer 5" />
+      <img src="images/layer5.png" alt="Layer 5 duplicate" />
     </div>
     <div class="layer layer6" data-layer="6">
-      <img src="images/layer6.png" alt="Layer 6" data-img="1" />
-      <img src="images/layer6.png" alt="Layer 6 duplicate" data-img="2" />
+      <img src="images/layer6.png" alt="Layer 6" />
+      <img src="images/layer6.png" alt="Layer 6 duplicate" />
     </div>
   </div>
 
-  <div class="info-button" onclick="showInfo()"></div>
+  <!-- Info button as direct link -->
+  <a class="info-button" href="https://github.com/Ebola16/poke-depths" target="_blank" rel="noopener noreferrer"></a>
 
   <script>
     let loadedImages = new Set();
@@ -357,7 +267,6 @@
     let currentScale = 1;
     let isScaling = false;
 
-    // Track image loading per layer
     const layerImageStatus = {
       1: { loaded: 0, total: 2 },
       2: { loaded: 0, total: 2 },
@@ -368,75 +277,43 @@
     };
 
     function updateLoadingProgress() {
-      const totalLoaded = Object.values(layerImageStatus).reduce((sum, layer) => sum + layer.loaded, 0);
-      const totalImages = Object.values(layerImageStatus).reduce((sum, layer) => sum + layer.total, 0);
-      
+      const totalLoaded = Object.values(layerImageStatus).reduce((sum, l) => sum + l.loaded, 0);
+      const totalImages = Object.values(layerImageStatus).reduce((sum, l) => sum + l.total, 0);
       const loadingIndicator = document.getElementById('loadingIndicator');
-      if (loadingIndicator) {
-        loadingIndicator.textContent = `Loading... ${totalLoaded}/${totalImages}`;
-      }
+      if (loadingIndicator) loadingIndicator.textContent = `Loading... ${totalLoaded}/${totalImages}`;
     }
 
     function onImageLoad(img) {
       const layer = parseInt(img.closest('.layer').dataset.layer);
       layerImageStatus[layer].loaded++;
-      
       updateLoadingProgress();
-      
-      // Check if this layer is complete
       if (layerImageStatus[layer].loaded === layerImageStatus[layer].total) {
         const layerElement = img.closest('.layer');
-        // Small delay to ensure both images are fully rendered
-        setTimeout(() => {
-          layerElement.classList.add('loaded');
-        }, 50);
+        setTimeout(() => { layerElement.classList.add('loaded'); }, 50);
       }
-      
-      // Check if all layers are complete
-      const allComplete = Object.values(layerImageStatus).every(layer => layer.loaded === layer.total);
+      const allComplete = Object.values(layerImageStatus).every(l => l.loaded === l.total);
       if (allComplete && !allLayersReady) {
-        setTimeout(() => {
-          finishLoading();
-        }, 200);
+        setTimeout(() => { finishLoading(); }, 200);
       }
     }
 
     function finishLoading() {
       allLayersReady = true;
-      
-      // Remove loading class to re-enable transitions
       document.body.classList.remove('loading');
-      
-      // Show the parallax container
-      const container = document.getElementById('parallaxContainer');
-      container.classList.add('ready');
-      
-      // Hide loading indicator
-      const loadingIndicator = document.getElementById('loadingIndicator');
-      if (loadingIndicator) {
-        loadingIndicator.classList.add('hidden');
-      }
-      
-      // Initial scaling
-      setTimeout(() => {
-        scaleForViewport();
-      }, 100);
-      
-      console.log('All layers loaded and ready!');
+      document.getElementById('parallaxContainer').classList.add('ready');
+      document.getElementById('loadingIndicator').classList.add('hidden');
+      setTimeout(() => { scaleForViewport(); }, 100);
     }
 
-    // Set up image loading handlers
     function setupImageLoading() {
       const images = document.querySelectorAll('.layer img');
       images.forEach(img => {
         if (img.complete && img.naturalWidth > 0) {
-          // Image already loaded
           onImageLoad(img);
         } else {
           img.addEventListener('load', () => onImageLoad(img));
-          img.addEventListener('error', (e) => {
+          img.addEventListener('error', e => {
             console.error('Failed to load image:', e.target.src);
-            // Still count as "loaded" to prevent hanging
             onImageLoad(img);
           });
         }
@@ -444,23 +321,16 @@
     }
 
     function getActualViewportSize() {
-      // Use the most reliable viewport dimensions available
       let width = window.innerWidth;
       let height = window.innerHeight;
-      
-      // Try visualViewport first (most accurate on modern mobile browsers)
-      // This accounts for browser bars automatically
       if (window.visualViewport) {
         width = window.visualViewport.width;
         height = window.visualViewport.height;
       }
-      
-      // Fallback for older browsers
       if (width <= 0 || height <= 0) {
         width = document.documentElement.clientWidth || window.innerWidth;
         height = document.documentElement.clientHeight || window.innerHeight;
       }
-      
       return { width: Math.round(width), height: Math.round(height) };
     }
 
@@ -471,121 +341,50 @@
 
     function scaleForViewport() {
       if (!allLayersReady || isScaling) return;
-      
       isScaling = true;
-      
       const container = document.getElementById('parallaxContainer');
       const viewport = getActualViewportSize();
       const isPortrait = isPortraitOrientation();
-      
-      let scale, offsetX = 0, offsetY = 0;
-      
-      // Always use the same scaling logic - fill viewport completely, no scrolling
       const scaleX = viewport.width / 1920;
       const scaleY = viewport.height / 1080;
-      scale = Math.max(scaleX, scaleY); // Fill viewport completely, crop if needed
-      
+      const scale = Math.max(scaleX, scaleY);
       const scaledWidth = 1920 * scale;
       const scaledHeight = 1080 * scale;
-      
-      // Center the content (this will crop edges if content is larger than viewport)
-      offsetX = (viewport.width - scaledWidth) / 2;
-      offsetY = (viewport.height - scaledHeight) / 2;
-      
-      // Set body to fixed viewport size - no scrolling in any orientation
+      const offsetX = (viewport.width - scaledWidth) / 2;
+      const offsetY = (viewport.height - scaledHeight) / 2;
       document.body.style.width = '100vw';
       document.body.style.height = '100vh';
       document.body.style.position = 'fixed';
-      
-      console.log(`${isPortrait ? 'Portrait' : 'Landscape'}: Scale ${scale.toFixed(3)}, Content: ${scaledWidth}x${scaledHeight}, Viewport: ${viewport.width}x${viewport.height}`);
-      
-      // Only update if scale changed significantly
       if (Math.abs(scale - currentScale) > 0.01) {
         currentScale = scale;
-        
-        // Apply transform in single operation
         requestAnimationFrame(() => {
           container.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
-          
-          setTimeout(() => {
-            isScaling = false;
-          }, 100);
+          setTimeout(() => { isScaling = false; }, 100);
         });
       } else {
         isScaling = false;
       }
     }
 
-    // Debounced event handlers
     let resizeTimeout;
     let orientationTimeout;
-
     function handleResize() {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(scaleForViewport, 150);
     }
-
     function handleOrientationChange() {
       clearTimeout(orientationTimeout);
       orientationTimeout = setTimeout(scaleForViewport, 800);
     }
 
-    // Event listeners
     window.addEventListener('resize', handleResize, { passive: true });
-    
     if (screen.orientation) {
       screen.orientation.addEventListener('change', handleOrientationChange);
     } else {
       window.addEventListener('orientationchange', handleOrientationChange);
     }
-    
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', handleResize, { passive: true });
-    }
-
-    function showInfo() {
-      if (document.querySelector('.modal')) return;
-
-      const modal = document.createElement('div');
-      modal.className = 'modal';
-      
-      const content = document.createElement('div');
-      content.className = 'modal-content';
-      content.innerHTML = `
-        <h2 style="margin-top:0; font-size:24px;">Poké Depths</h2>
-        <div style="margin:20px 0;">
-          <a href="https://ebola16.github.io/" target="_blank" style="color:#66ccff; text-decoration:none; font-weight:bold; border-bottom:1px solid #66ccff;">Author: Ebola16</a>
-        </div>
-        <p style="line-height:1.6; margin:15px 0;">A parallax underwater scene with traveling Pokémon!</p>
-        <div style="text-align:left; margin:20px 0;">
-          <p style="margin:8px 0;">• Random Pokémon swimming across the screen</p>
-          <p style="margin:8px 0;">• 1/4096 chance for shiny Pokémon</p>
-          <p style="margin:8px 0;">• All Luvdisc on Valentine's Day</p>
-          <p style="margin:8px 0;">• Responsive design for all devices</p>
-        </div>
-        <div class="disclaimer">
-          <p>Pokémon assets are ©2025 Nintendo, Creatures Inc., and GAME FREAK inc. Used under fair use.</p>
-          <p><a href="https://craftpix.net/freebies/free-underwater-world-parallax-game-backgrounds/" target="_blank" style="color:#66ccff;">Background source</a></p>
-          <p>Pokémon HOME images Gen I - IX provided by <a href="https://x.com/zim_" target="_blank" style="color:#66ccff;">@zim_</a></p>
-        </div>
-        <button onclick="this.closest('.modal').remove()" style="
-          background: rgba(255, 255, 255, 0.2);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          color: white;
-          padding: 10px 20px;
-          border-radius: 5px;
-          cursor: pointer;
-          font-size: 16px;
-          margin-top: 15px;
-        ">Close</button>
-      `;
-      
-      modal.appendChild(content);
-      document.body.appendChild(modal);
-
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) modal.remove();
-      });
     }
 
     async function fetchGifList() {
@@ -597,7 +396,6 @@
     }
 
     const gifPool = [];
-
     function getGif() {
       let gif;
       if (gifPool.length > 0) {
@@ -610,7 +408,6 @@
       gif.style.display = 'block';
       return gif;
     }
-
     function releaseGif(gif) {
       gif.style.animation = '';
       gif.style.left = '';
@@ -627,30 +424,22 @@
         setTimeout(() => spawnTravelingGif(gifs, isValentinesDay), 2000 + Math.random() * 4000);
         return;
       }
-
       const gif = getGif();
-
       const useShiny = Math.random() < (1 / 4096) ? 'shiny' : 'normal';
       const randomGif = isValentinesDay ? "0370 - Luvdisc.gif" : gifs[Math.floor(Math.random() * gifs.length)];
       gif.src = `images/home/${useShiny}/${randomGif}`;
-
       const pokemonName = randomGif.replace(/^\d+\s*-\s*/, '').replace('.gif', '');
       gif.alt = `${useShiny === 'shiny' ? 'Shiny ' : ''}${pokemonName} swimming`;
-
       const container = document.getElementById('parallaxContainer');
       container.appendChild(gif);
-
       const layerZ = Math.floor(Math.random() * 4) + 3;
       gif.style.zIndex = layerZ;
-
       const scale = 0.5 + (layerZ - 3) * 0.25;
       const speed = 15 - (layerZ - 3) * 2;
       gif.style.width = `${200 * scale}px`;
-
       const minTop = 80;
       const maxTop = 1080 - 280 - (200 * scale);
       gif.style.top = `${minTop + Math.random() * (maxTop - minTop)}px`;
-
       const leftToRight = Math.random() < 0.5;
       if (leftToRight) {
         gif.style.left = '0px';
@@ -661,24 +450,16 @@
         gif.style.transform = `scale(${scale})`;
         gif.style.animation = `moveRTL ${speed}s linear forwards`;
       }
-
       gif.addEventListener('animationend', () => releaseGif(gif), { once: true });
-
       setTimeout(() => spawnTravelingGif(gifs, isValentinesDay), 2000 + Math.random() * 4000);
     }
 
-    // Initialize everything
     async function initialize() {
       try {
-        // Set up image loading tracking
         setupImageLoading();
-        
-        // Load Pokemon data in parallel
         const gifs = await fetchGifList();
         const today = new Date();
         const isValentinesDay = today.getMonth() === 1 && today.getDate() === 14;
-        
-        // Wait for layers to be ready, then start Pokemon spawning
         const checkReady = () => {
           if (allLayersReady) {
             setTimeout(() => {
@@ -689,18 +470,15 @@
           }
         };
         checkReady();
-        
       } catch (error) {
         console.error("Failed to initialize:", error);
       }
     }
 
-    // Start initialization
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initialize);
     } else {
       initialize();
     }
   </script>
-</body>
-</html>
+</
