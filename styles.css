@@ -10,9 +10,7 @@ body {
   margin: 0;
   padding: 0;
   background: #002233;
-  position: fixed;
-  top: 0;
-  left: 0;
+  position: relative;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
