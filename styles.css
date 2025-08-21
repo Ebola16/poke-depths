@@ -160,17 +160,6 @@ body {
   font-style: italic;
 }
 
-@media (max-width: 768px) {
-  .info-button {
-    bottom: auto;
-    left: auto;
-    width: 25px;
-    height: 25px;
-    transform: translate(5px, 5px);
-  }
-  .info-button::before { font-size: 10px; }
-}
-
 .info-button:hover {
   background: rgba(0, 0, 0, 0.7);
   border-color: rgba(255, 255, 255, 0.5);
