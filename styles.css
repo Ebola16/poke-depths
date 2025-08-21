@@ -1,0 +1,199 @@
+* {
+  -webkit-transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  -o-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #002233;
+  position: fixed;
+  top: 0;
+  left: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
+.parallax-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  background: #002233;
+  transform-origin: top left;
+  box-sizing: border-box;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-perspective: 1000px;
+  perspective: 1000px;
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  visibility: hidden;
+}
+
+.parallax-container.ready {
+  visibility: visible;
+}
+
+.layer {
+  position: absolute;
+  display: flex;
+  top: 0;
+  left: 0;
+  height: 1080px;
+  width: 3840px;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  opacity: 0;
+  transition: none;
+}
+
+.layer.loaded {
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.layer img {
+  width: 1920px;
+  height: 1080px;
+  flex-shrink: 0;
+  -webkit-user-select: none;
+  user-select: none;
+  pointer-events: none;
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: none;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: optimize-contrast;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+.layer img:last-child {
+  margin-left: -1px;
+}
+
+.layer1 { z-index: 1; animation-name: scroll; animation-duration: 120s; }
+.layer2 { z-index: 2; animation-name: scroll; animation-duration: 100s; }
+.layer3 { z-index: 3; animation-name: scroll; animation-duration: 80s; }
+.layer4 { z-index: 4; animation-name: scroll; animation-duration: 60s; }
+.layer5 { z-index: 5; animation-name: scroll; animation-duration: 40s; }
+.layer6 { z-index: 6; animation-name: scroll; animation-duration: 20s; }
+
+@keyframes scroll {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-1920px, 0, 0); }
+}
+
+.traveling-gif {
+  position: absolute;
+  transform-origin: center center;
+  pointer-events: none;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  left: 0;
+}
+
+@keyframes moveLTR {
+  from { transform: translateX(-200px); }
+  to { transform: translateX(2120px); }
+}
+
+@keyframes moveLTRFlipped {
+  from { transform: translateX(-200px) scaleX(-1); }
+  to { transform: translateX(2120px) scaleX(-1); }
+}
+
+@keyframes moveRTL {
+  from { transform: translateX(1920px); }
+  to { transform: translateX(-200px); }
+}
+
+.info-button {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 50px;
+  height: 50px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  text-decoration: none;
+}
+
+.info-button::before {
+  content: 'i';
+  color: white;
+  font-family: serif;
+  font-size: 24px;
+  font-weight: bold;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .info-button {
+    bottom: auto;
+    left: auto;
+    width: 25px;
+    height: 25px;
+    transform: translate(5px, 5px);
+  }
+  .info-button::before { font-size: 10px; }
+}
+
+.info-button:hover {
+  background: rgba(0, 0, 0, 0.7);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.1);
+}
+
+.loading-indicator {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: rgba(255, 255, 255, 0.8);
+  font-family: Arial, sans-serif;
+  z-index: 100;
+  font-size: 18px;
+  text-align: center;
+}
+
+.loading-indicator.hidden {
+  display: none;
+}
+
+.loading * {
+  transition: none !important;
+  animation: none !important;
+}
