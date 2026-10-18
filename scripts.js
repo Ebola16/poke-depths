@@ -1,7 +1,5 @@
 let loadedImages = new Set();
 let allLayersReady = false;
-let currentScale = 1;
-let isScaling = false;
 
 const layerImageStatus = {
   1: { loaded: 0, total: 2 },
@@ -71,8 +69,7 @@ function getActualViewportSize() {
 }
 
 function scaleForViewport() {
-  if (!allLayersReady || isScaling) return;
-  isScaling = true;
+  if (!allLayersReady) return;
   const container = document.getElementById('parallaxContainer');
   const viewport = getActualViewportSize();
   const scaleX = viewport.width / 1920;
@@ -85,15 +82,11 @@ function scaleForViewport() {
   document.body.style.width = '100vw';
   document.body.style.height = '100vh';
   document.body.style.position = 'fixed';
-  if (Math.abs(scale - currentScale) > 0.01) {
-    currentScale = scale;
-    requestAnimationFrame(() => {
-      container.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
-      setTimeout(() => { isScaling = false; }, 100);
-    });
-  } else {
-    isScaling = false;
-  }
+  const transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+  if (container.style.transform === transform) return;
+  requestAnimationFrame(() => {
+    container.style.transform = transform;
+  });
 }
 
 let resizeTimeout;
@@ -108,6 +101,7 @@ function handleOrientationChange() {
 }
 
 window.addEventListener('resize', handleResize, { passive: true });
+document.addEventListener('fullscreenchange', handleResize);
 if (screen.orientation) {
   screen.orientation.addEventListener('change', handleOrientationChange);
 } else {
@@ -126,39 +120,43 @@ async function fetchGifList() {
   return list;
 }
 
-const gifPool = [];
-function getGif() {
-  let gif;
-  if (gifPool.length > 0) {
-    gif = gifPool.pop();
-  } else {
-    gif = document.createElement('img');
-    gif.className = 'traveling-gif';
-    gif.onerror = () => releaseGif(gif);
-  }
-  gif.style.display = 'block';
-  return gif;
-}
 function releaseGif(gif) {
-  gif.style.animation = '';
-  gif.style.left = '';
-  gif.style.top = '';
-  gif.style.width = '';
-  gif.style.transform = '';
-  gif.style.display = 'none';
-  gifPool.push(gif);
   if (gif.parentElement) gif.parentElement.removeChild(gif);
 }
 
-function spawnTravelingGif(gifs, isValentinesDay) {
+function loadGif(gif, src) {
+  return new Promise((resolve, reject) => {
+    gif.addEventListener('load', resolve, { once: true });
+    gif.addEventListener('error', () => reject(new Error(`Failed to load Pokémon image: ${src}`)), { once: true });
+    gif.src = src;
+  });
+}
+
+function scheduleTravelingGif(gifs, isValentinesDay, delay = 2000 + Math.random() * 4000) {
+  setTimeout(() => spawnTravelingGif(gifs, isValentinesDay), delay);
+}
+
+async function spawnTravelingGif(gifs, isValentinesDay) {
   if (document.hidden || !allLayersReady) {
-    setTimeout(() => spawnTravelingGif(gifs, isValentinesDay), 2000 + Math.random() * 4000);
+    scheduleTravelingGif(gifs, isValentinesDay);
     return;
   }
-  const gif = getGif();
+  const gif = document.createElement('img');
+  gif.className = 'traveling-gif';
   const useShiny = Math.random() < (1 / 4096) ? 'shiny' : 'normal';
   const randomGif = isValentinesDay ? "0370 - Luvdisc.gif" : gifs[Math.floor(Math.random() * gifs.length)];
-  gif.src = `images/home/${useShiny}/${randomGif}`;
+  const src = `images/home/${useShiny}/${randomGif}`;
+  try {
+    await loadGif(gif, src);
+  } catch (error) {
+    console.error(error);
+    scheduleTravelingGif(gifs, isValentinesDay);
+    return;
+  }
+  if (document.hidden || !allLayersReady) {
+    scheduleTravelingGif(gifs, isValentinesDay);
+    return;
+  }
   const pokemonName = randomGif.replace(/^\d+\s*-\s*/, '').replace('.gif', '');
   gif.alt = `${useShiny === 'shiny' ? 'Shiny ' : ''}${pokemonName} swimming`;
   const container = document.getElementById('parallaxContainer');
@@ -182,7 +180,7 @@ function spawnTravelingGif(gifs, isValentinesDay) {
     gif.style.animation = `moveRTL ${speed}s linear forwards`;
   }
   gif.addEventListener('animationend', () => releaseGif(gif), { once: true });
-  setTimeout(() => spawnTravelingGif(gifs, isValentinesDay), 2000 + Math.random() * 4000);
+  scheduleTravelingGif(gifs, isValentinesDay);
 }
 
 // Initialize
