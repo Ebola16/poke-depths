@@ -18,11 +18,26 @@ function updateLoadingProgress() {
   if (loadingIndicator) loadingIndicator.textContent = `Loading... ${totalLoaded}/${totalImages}`;
 }
 
+function getLayerNumber(img) {
+  if (!img) return null;
+
+  const layerElement = img.closest('.layer');
+  if (!layerElement || !layerElement.dataset.layer) return null;
+
+  const layer = Number.parseInt(layerElement.dataset.layer, 10);
+  return Number.isFinite(layer) ? layer : null;
+}
+
 function markImageSettled(img) {
   if (loadedImages.has(img)) return;
   loadedImages.add(img);
 
-  const layer = parseInt(img.closest('.layer').dataset.layer, 10);
+  const layer = getLayerNumber(img);
+  if (layer === null || !layerImageStatus[layer]) {
+    updateLoadingProgress();
+    return;
+  }
+
   layerImageStatus[layer].loaded++;
   updateLoadingProgress();
 
@@ -53,6 +68,8 @@ function onImageError(img) {
 }
 
 function waitForLayerTransitions(layers) {
+  if (!Array.isArray(layers) || layers.length === 0) return Promise.resolve();
+
   return Promise.all(layers.map(layer => new Promise(resolve => {
     let timeout;
     const finish = () => {
@@ -74,8 +91,14 @@ function waitForLayerTransitions(layers) {
 function finishLoading() {
   allLayersReady = true;
   scaleForViewport();
-  document.body.classList.remove('loading');
+
+  if (document.body) {
+    document.body.classList.remove('loading');
+  }
+
   const container = document.getElementById('parallaxContainer');
+  if (!container) return;
+
   container.classList.add('ready');
 
   const layers = Array.from(container.querySelectorAll('.layer'));
@@ -83,7 +106,8 @@ function finishLoading() {
   layers.forEach(layer => layer.classList.add('loaded'));
 
   layersVisible.then(() => {
-    document.getElementById('loadingIndicator').classList.add('hidden');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    if (loadingIndicator) loadingIndicator.classList.add('hidden');
   });
 }
 
@@ -188,6 +212,12 @@ async function spawnTravelingGif(gifs, isValentinesDay) {
     scheduleTravelingGif(gifs, isValentinesDay);
     return;
   }
+
+  const container = document.getElementById('parallaxContainer');
+  if (!container) {
+    return;
+  }
+
   const gif = document.createElement('img');
   gif.className = 'traveling-gif';
   const useShiny = Math.random() < (1 / 4096) ? 'shiny' : 'normal';
@@ -206,7 +236,6 @@ async function spawnTravelingGif(gifs, isValentinesDay) {
   }
   const pokemonName = randomGif.replace(/^\d+\s*-\s*/, '').replace('.gif', '');
   gif.alt = `${useShiny === 'shiny' ? 'Shiny ' : ''}${pokemonName} swimming`;
-  const container = document.getElementById('parallaxContainer');
   container.appendChild(gif);
   const layerZ = Math.floor(Math.random() * 4) + 3;
   gif.style.zIndex = layerZ;
@@ -233,6 +262,10 @@ async function spawnTravelingGif(gifs, isValentinesDay) {
 // Initialize
 async function initialize() {
   try {
+    if (!document.body || !document.getElementById('parallaxContainer')) {
+      return;
+    }
+
     setupImageLoading();
     const gifs = await fetchGifList();
     const today = new Date();
