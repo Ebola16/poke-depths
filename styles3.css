@@ -19,8 +19,8 @@
   border: 0;
 }
 
-/* Force GPU acceleration for layers and GIFs only */
-.layer, .traveling-gif {
+/* Keep traveling GIFs on their own compositing layer. */
+.traveling-gif {
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
 }
@@ -52,12 +52,6 @@ body {
   background: #002233;
   transform-origin: top left;
   box-sizing: border-box;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  -webkit-perspective: 1000px;
-  perspective: 1000px;
-  -webkit-transform-style: preserve-3d;
-  transform-style: preserve-3d;
   visibility: hidden;
   pointer-events: none; /* allow button clicks */
 }
@@ -76,16 +70,17 @@ body {
   width: 3840px;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  -webkit-transform-style: preserve-3d;
-  transform-style: preserve-3d;
   opacity: 0;
   transition: opacity 0.3s ease-in-out;
+  animation-play-state: paused;
 }
 
 .layer.loaded {
   opacity: 1;
+}
+
+.parallax-container.animation-started .layer {
+  animation-play-state: running;
 }
 
 .layer img {
@@ -99,8 +94,6 @@ body {
   margin: 0;
   padding: 0;
   border: none;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
   image-rendering: -webkit-optimize-contrast;
   image-rendering: optimize-contrast;
 }
@@ -118,8 +111,8 @@ body {
 .layer6 { z-index: 6; animation-name: scroll; animation-duration: 20s; }
 
 @keyframes scroll {
-  from { transform: translate3d(0, 0, 0); }
-  to { transform: translate3d(-1920px, 0, 0); }
+  from { transform: translateX(0); }
+  to { transform: translateX(-1920px); }
 }
 
 /* Traveling GIF animations */

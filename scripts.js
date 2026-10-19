@@ -108,6 +108,11 @@ function finishLoading() {
   layersVisible.then(() => {
     const loadingIndicator = document.getElementById('loadingIndicator');
     if (loadingIndicator) loadingIndicator.classList.add('hidden');
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          container.classList.add('animation-started');
+        });
+      });
   });
 }
 
@@ -126,15 +131,11 @@ function setupImageLoading() {
 }
 
 function getActualViewportSize() {
-  let width = window.innerWidth;
-  let height = window.innerHeight;
-  if (window.visualViewport) {
-    width = window.visualViewport.width;
-    height = window.visualViewport.height;
-  }
+  let width = document.documentElement.clientWidth;
+  let height = document.documentElement.clientHeight;
   if (width <= 0 || height <= 0) {
-    width = document.documentElement.clientWidth || window.innerWidth;
-    height = document.documentElement.clientHeight || window.innerHeight;
+    width = window.innerWidth;
+    height = window.innerHeight;
   }
   return { width: Math.round(width), height: Math.round(height) };
 }
@@ -177,9 +178,6 @@ if (screen.orientation) {
   screen.orientation.addEventListener('change', handleOrientationChange);
 } else {
   window.addEventListener('orientationchange', handleOrientationChange);
-}
-if (window.visualViewport) {
-  window.visualViewport.addEventListener('resize', handleResize, { passive: true });
 }
 
 // GIF handling
@@ -271,7 +269,8 @@ async function initialize() {
     const today = new Date();
     const isValentinesDay = today.getMonth() === 1 && today.getDate() === 14;
     const checkReady = () => {
-      if (allLayersReady) {
+      const container = document.getElementById('parallaxContainer');
+      if (container && container.classList.contains('animation-started')) {
         setTimeout(() => {
           spawnTravelingGif(gifs, isValentinesDay);
         }, 1000);
