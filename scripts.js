@@ -1,6 +1,19 @@
 let loadedImages = new Set();
 let allLayersReady = false;
 let loadingFinishScheduled = false;
+let cursorIdleTimeout;
+const cursorIdleDelay = 2000;
+
+function showCursor() {
+  document.body?.classList.remove('cursor-hidden');
+  clearTimeout(cursorIdleTimeout);
+  cursorIdleTimeout = setTimeout(() => {
+    document.body?.classList.add('cursor-hidden');
+  }, cursorIdleDelay);
+}
+
+document.addEventListener('pointermove', showCursor, { passive: true });
+showCursor();
 
 const layerImageStatus = {
   1: { loaded: 0, total: 2 },

@@ -41,6 +41,11 @@ body {
   touch-action: none;
 }
 
+body.cursor-hidden,
+body.cursor-hidden * {
+  cursor: none !important;
+}
+
 /* Parallax container */
 .parallax-container {
   position: fixed;
